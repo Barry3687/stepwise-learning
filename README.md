@@ -2,6 +2,10 @@
 
 給自己使用的大學課本與講義循序教學網站。深色介面，每次學習一個觀念，搭配逐步推導、圖解與基礎題。
 
+- 公開網站 https://barry3687.github.io/stepwise-learning/
+- Repository https://github.com/Barry3687/stepwise-learning
+- 開發規則 [AGENTS.md](AGENTS.md)
+
 ## 目前狀態
 
 已完成深色首頁、逐觀念閱讀介面、選擇題、答錯提示、重試、手動開啟解析、數值誤差判分、瀏覽器進度保存與重設、MathJax 公式，以及 XY、XYZ 投影與一階低通波德圖繪製。

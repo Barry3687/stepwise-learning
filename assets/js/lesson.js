@@ -59,6 +59,7 @@ function renderBlock(block, host) {
       catch (error) { figure.append(element("p", `圖表待修正：${error.message}`)); }
     }
     figure.append(element("figcaption", block.caption || block.alt || "依本觀念資料繪製"));
+    if (block.type === "diagram") figure.append(element("p", "小螢幕可在圖表內橫向捲動。", "fine-print"));
     host.append(figure);
   }
 }

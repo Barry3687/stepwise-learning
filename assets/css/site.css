@@ -53,8 +53,9 @@ button, input, textarea { font: inherit; }
 .teaching-section p { white-space: pre-wrap; }
 .origin-tag { font-size: 11px; color: var(--accent); border: 1px solid var(--line); padding: 3px 8px; border-radius: 5px; }
 .formula { padding: 18px; margin: 18px 0; background: #182436; overflow-x: auto; }
-.lesson-figure { margin: 24px 0; padding: 16px; background: #131d2d; border: 1px solid var(--line); border-radius: 10px; }
+.lesson-figure { margin: 24px 0; padding: 16px; background: #131d2d; border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
 .lesson-figure svg, .lesson-figure img { display: block; width: 100%; height: auto; }
+.lesson-figure svg { min-width: 560px; }
 figcaption, .source-note { color: var(--muted); font-size: 12px; }
 .sources { border-top: 1px solid var(--line); padding: 14px 0; color: var(--muted); font-size: 13px; }
 .sources summary { cursor: pointer; }
