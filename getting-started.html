@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>新增章節 · 循序漸進</title>
+  <link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+  <aside class="sidebar"><a class="brand" href="index.html"><span class="brand-icon" aria-hidden="true">循</span><span>循序漸進<small>STEP BY STEP</small></span></a><a class="nav-home" href="index.html">返回學習首頁 →</a><p class="fine-print">新增教材後，首頁會依章節清單自動更新。</p></aside>
+  <main class="guide-content">
+    <p class="breadcrumb"><a href="index.html">學習首頁</a> / 新增章節</p>
+    <h1>把下一章，<br>交給 AI 一起整理。</h1>
+    <p class="lead">你準備教材與學習範圍，AI 依 AGENTS.md 整理觀念、推導、圖解與練習，再加入網站。</p>
+    <ol>
+      <li><strong>提供教材與範圍。</strong>在這個專案的對話附上 PDF、講義圖片或公開教材連結，說明科目、章節與頁碼。教材不清楚的地方會先列出來確認。</li>
+      <li><strong>確認觀念大綱。</strong>AI 先拆出先備知識與學習順序。確認後，再依規則製作逐觀念內容與基礎選擇題。</li>
+      <li><strong>檢查並加入網站。</strong>AI 產生教學資料，使用新增工具核對格式、來源、圖片與題目，建立章節頁面並更新清單。</li>
+      <li><strong>預覽、發布。</strong>先實際閱讀、作答及查看圖表，確認後同步到 GitHub。GitHub Pages 部署完成才會出現在公開網站。</li>
+    </ol>
+    <h2>你可以直接貼給 AI</h2>
+    <pre>請先讀取「循序漸進」專案的 AGENTS.md。
+我要新增一個章節，教材已附上。
+科目：【填入科目】
+章節與頁碼：【填入範圍】
+請先閱讀教材，列出觀念順序、先備知識及無法辨識的地方。
+大綱確認後，依既有規則製作教學、公式、必要圖解及每個觀念的基礎選擇題。
+請使用章節工具檢查與匯入，驗收後同步到 GitHub 並確認公開網址。</pre>
+    <p class="source-note">原始教材是否可公開需先確認。通常發布自行整理的教學內容，私人教材留在本機。網站目前透過專案中的 AI 協作新增章節，尚未提供網頁上傳 PDF 自動建課功能。</p>
+    <details><summary>需要自己操作檔案時</summary>
+      <p>把已確認且符合格式的教學資料保存為 JSON，切到專案資料夾後執行以下指令。</p>
+      <pre>node scripts/chapters.js add "你的教學資料.json"
+node scripts/chapters.js check
+python backend/server.py</pre>
+      <p>開啟 http://127.0.0.1:8000 預覽。新增工具會建立章節頁、來源資料與首頁清單，已有同名章節時停止，請先核對內容。</p>
+      <p>資料格式與圖片參數見 <a href="content/FORMAT.md">內容格式說明</a>。開發規則見 <a href="AGENTS.md">AGENTS.md</a>。</p>
+    </details>
+    <p><a class="action-button" href="index.html">返回學習首頁 →</a></p>
+    <footer>循序漸進 <span>先理解，再前進</span></footer>
+  </main>
+</body>
+</html>

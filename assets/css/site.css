@@ -1,5 +1,6 @@
 :root { color-scheme: dark; --bg: #111827; --panel: #1f2937; --text: #f3f4f6; --muted: #bbc6d6; --accent: #8dbbff; --line: #334155; }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; line-height: 1.8; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; cursor: pointer; color: inherit; }
@@ -22,6 +23,16 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outlin
 progress { display: block; width: 100%; height: 7px; accent-color: var(--accent); }
 .text-button { background: transparent; border: 0; padding: 0; color: var(--accent); font-size: 12px; }
 main { max-width: 1430px; margin-left: 264px; padding: 32px 7% 0; }
+#lesson-content { max-width: 920px; margin: 0 auto; }
+#lesson-content h1 { font-size: clamp(30px, 3.6vw, 46px); line-height: 1.4; }
+.resume-link { margin-top: 24px; }
+.add-chapter-guide { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px; margin: 30px 0; border: 1px solid var(--line); border-radius: 12px; }
+.add-chapter-guide h2 { margin: 0 0 8px; }
+.add-chapter-guide p { font-size: 13px; color: var(--muted); margin: 0; }
+.guide-content { max-width: 850px; }
+.guide-content pre { padding: 18px; white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; font-size: 14px; }
+.guide-content li { margin-bottom: 16px; }
+.guide-content a { color: var(--accent); text-decoration: underline; }
 .breadcrumb { color: var(--muted); font-size: 12px; }
 .breadcrumb span { margin: 0 12px; color: #5f738f; }
 .intro { padding: 65px 0 50px; }
@@ -88,5 +99,6 @@ input[type=radio], input[type=checkbox] { accent-color: var(--accent); }
   main { margin-left: 0; padding: 24px 22px 0; }
   .intro { padding-top: 36px; }
   .steps { grid-template-columns: 1fr; gap: 22px; }
+  .add-chapter-guide { align-items: flex-start; flex-direction: column; }
   footer { flex-direction: column; }
 }

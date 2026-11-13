@@ -9,6 +9,7 @@ let catalog;
 let currentIndex = 0;
 let renderToken = 0;
 const drafts = new Map();
+const quizStates = new Map();
 
 function element(tag, text, className) {
   const result = document.createElement(tag);
@@ -52,7 +53,7 @@ function renderBlock(block, host) {
     if (block.type === "image") {
       const image = element("img");
       image.src = "../" + block.src; image.alt = block.alt;
-      image.addEventListener("error", () => { figure.replaceChildren(element("p", "圖片無法載入，請查看圖說或回報此教材問題。")); });
+      image.addEventListener("error", () => { image.replaceWith(element("p", "圖片無法載入，請查看圖說或回報此教材問題。")); });
       figure.append(image);
     } else {
       try { figure.append(LectureFigures.render(block)); }
@@ -92,6 +93,7 @@ function addReview(concept, host) {
       const data = await response.json();
       if (!response.ok) throw Error(data.error || "AI 服務暫時無法使用");
       result.textContent = `AI 回饋（請配合教材核對）\n\n${data.feedback}`;
+      renderMath(result);
     } catch (error) {
       result.textContent = error.name === "AbortError" ? "等待逾時。輸入已保留，可以稍後重試。" : `檢查失敗：${error.message}。輸入已保留。`;
     } finally { send.disabled = false; }
@@ -107,6 +109,9 @@ function addReview(concept, host) {
 function renderConcept() {
   const token = ++renderToken;
   const concept = lesson.concepts[currentIndex];
+  savedProgress.visit(concept.id);
+  const quizState = quizStates.get(concept.id) || { choice: null, attempted: false, correct: false, revealed: false, feedback: "先選一個答案，再確認你的理解。", numericInput: "", numericFeedback: "" };
+  quizStates.set(concept.id, quizState);
   if (window.MathJax?.typesetClear) window.MathJax.typesetClear([target]);
   target.replaceChildren();
   target.append(element("p", `觀念 ${currentIndex + 1} / ${lesson.concepts.length}`, "eyebrow"), element("h1", concept.title));
@@ -136,12 +141,22 @@ function renderConcept() {
   concept.quiz.options.forEach((option, i) => {
     const label = element("label", undefined, "option");
     const radio = element("input"); radio.type = "radio"; radio.name = "answer"; radio.value = String(i); radio.required = true;
+    radio.checked = quizState.choice === i;
+    radio.addEventListener("change", () => {
+      quizState.choice = i;
+      quizState.correct = false;
+      quizState.feedback = "已選擇答案，請確認你的理解。";
+      feedback.textContent = quizState.feedback;
+      feedback.classList.remove("correct");
+      continueButton.disabled = !(quizState.revealed || savedProgress.completed.includes(concept.id));
+    });
     label.append(radio, document.createTextNode(`${String.fromCharCode(65 + i)}. ${option}`)); fieldset.append(label);
   });
-  const feedback = element("p", "先選一個答案，再確認你的理解。", "feedback"); feedback.setAttribute("role", "status");
-  const submit = element("button", "確認答案", "action-button"); submit.type = "submit";
-  const solution = element("div", undefined, "solution"); solution.hidden = true;
-  const show = button("查看完整解析", () => { solution.hidden = false; continueButton.disabled = false; renderMath(solution); }, "secondary-button"); show.disabled = true;
+  const feedback = element("p", quizState.feedback, "feedback"); feedback.setAttribute("role", "status");
+  feedback.classList.toggle("correct", quizState.correct);
+  const submit = element("button", quizState.attempted ? "再確認一次" : "確認答案", "action-button"); submit.type = "submit";
+  const solution = element("div", undefined, "solution"); solution.hidden = !quizState.revealed;
+  const show = button("查看完整解析", () => { quizState.revealed = true; solution.hidden = false; continueButton.disabled = false; renderMath(solution); }, "secondary-button"); show.disabled = !quizState.attempted;
   solution.append(element("h3", `正確答案：${String.fromCharCode(65 + concept.quiz.answer)}`));
   concept.quiz.explanations.forEach((explanation, i) => solution.append(element("p", `${String.fromCharCode(65 + i)}. ${explanation}`)));
   form.append(fieldset, submit, show);
@@ -151,7 +166,11 @@ function renderConcept() {
     if (selected === null) return;
     show.disabled = false;
     const correct = Number(selected) === concept.quiz.answer;
-    feedback.textContent = correct ? "答對了！確認理解後，可以繼續下一個觀念。" : `再想想看。提示：${concept.quiz.hint}`;
+    quizState.choice = Number(selected);
+    quizState.attempted = true;
+    quizState.correct = correct;
+    quizState.feedback = correct ? "答對了！確認理解後，可以繼續下一個觀念。" : `再想想看。提示：${concept.quiz.hint}`;
+    feedback.textContent = quizState.feedback;
     feedback.classList.toggle("correct", correct);
     if (correct) continueButton.disabled = false;
     submit.textContent = "再確認一次";
@@ -161,11 +180,18 @@ function renderConcept() {
     const n = concept.numeric;
     const numeric = element("section", undefined, "quiz-panel"); numeric.append(element("h2", "數值練習"));
     const nform = element("form"); const number = element("input"); number.type = "text"; number.inputMode = "decimal"; number.id = "numeric-answer";
+    number.value = quizState.numericInput;
+    number.addEventListener("input", () => { quizState.numericInput = number.value; });
     const nlabel = element("label", `${n.prompt}（單位 ${n.unit || "無"}，容許誤差 ±${n.tolerance}）`); nlabel.htmlFor = number.id;
-    const nresult = element("p"); nresult.setAttribute("role", "status");
+    const nresult = element("p", quizState.numericFeedback); nresult.setAttribute("role", "status");
     const nsubmit = element("button", "核對數值", "secondary-button"); nsubmit.type = "submit";
     nform.append(nlabel, number, nsubmit); numeric.append(nform, nresult);
-    nform.addEventListener("submit", e => { e.preventDefault(); const correct = core.checkNumeric(number.value, n.answer, n.tolerance); nresult.textContent = correct === null ? "請輸入有限的數字，單位不需輸入。" : correct ? "數值正確。" : "數值還不一致，請檢查單位、代入與計算。"; });
+    nform.addEventListener("submit", e => {
+      e.preventDefault();
+      const correct = core.checkNumeric(number.value, n.answer, n.tolerance);
+      quizState.numericFeedback = correct === null ? "請輸入有限的數字，單位不需輸入。" : correct ? "數值正確。" : "數值還不一致，請檢查單位、代入與計算。";
+      nresult.textContent = quizState.numericFeedback;
+    });
     target.append(numeric);
   }
   addReview(concept, target);
@@ -182,7 +208,7 @@ function renderConcept() {
       }
     }
   });
-  continueButton.disabled = !savedProgress.completed.includes(concept.id);
+  continueButton.disabled = !(quizState.correct || quizState.revealed || savedProgress.completed.includes(concept.id));
   controls.append(previous, continueButton); target.append(controls);
   refreshProgress();
   renderMath(target, token);
@@ -198,6 +224,8 @@ function selectHash() {
   const index = lesson.concepts.findIndex(c => `#${c.id}` === location.hash);
   currentIndex = index >= 0 ? index : 0;
   renderConcept();
+  document.querySelector("#sidebar").classList.remove("is-open");
+  document.querySelector("#menu-toggle").setAttribute("aria-expanded", "false");
   window.scrollTo({ top: 0, behavior: "auto" });
 }
 document.querySelector("#menu-toggle").addEventListener("click", e => {
@@ -205,7 +233,7 @@ document.querySelector("#menu-toggle").addEventListener("click", e => {
   e.currentTarget.setAttribute("aria-expanded", String(open)); document.querySelector("#sidebar").classList.toggle("is-open", open);
 });
 document.querySelector("#reset-progress").addEventListener("click", () => {
-  if (confirm("要重設這個瀏覽器的全部學習進度嗎？")) { savedProgress.reset(); renderConcept(); }
+  if (confirm("要重設這個瀏覽器的全部學習進度嗎？")) { savedProgress.reset(); quizStates.clear(); renderConcept(); }
 });
 (async () => {
   try {
@@ -220,6 +248,10 @@ document.querySelector("#reset-progress").addEventListener("click", () => {
     script.addEventListener("load", () => renderMath(target));
     script.addEventListener("error", () => target.prepend(element("p", "公式排版服務暫時無法載入，以下保留原始 LaTeX 公式。", "source-note")));
     document.head.append(script);
+    if (!location.hash) {
+      const resume = core.resumeConcept([chapter], savedProgress.completed, savedProgress.lastId);
+      history.replaceState(null, "", `#${resume.concept.id}`);
+    }
     window.addEventListener("hashchange", selectHash); selectHash();
   } catch (error) {
     target.replaceChildren(element("h1", "教材準備中"), element("p", error.message));

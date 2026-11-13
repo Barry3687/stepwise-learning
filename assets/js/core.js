@@ -10,7 +10,7 @@
       if (ids.has(chapter.id)) throw Error("重複章節");
       ids.add(chapter.id);
       for (const concept of chapter.concepts) {
-        if (!/^ch\d{2}-c\d{2}$/.test(concept.id) || typeof concept.title !== "string" || ids.has(concept.id)) throw Error("觀念識別碼或標題錯誤");
+        if (!concept || !new RegExp(`^${chapter.id.slice(0, 4)}-c\\d{2}$`).test(concept.id) || typeof concept.title !== "string" || !concept.title.trim() || ids.has(concept.id)) throw Error("觀念識別碼或標題錯誤");
         ids.add(concept.id);
       }
     }
@@ -20,6 +20,7 @@
     if (!data || data.id !== chapter.id || data.title !== chapter.title || !Array.isArray(data.concepts) || !Array.isArray(data.sources)) throw Error("章節內容格式錯誤");
     if (data.concepts.length !== chapter.concepts.length) throw Error("觀念數量不一致");
     const sourceIds = new Set(data.sources.map(source => source.id));
+    if (sourceIds.size !== data.sources.length || data.sources.some(source => !source.id || typeof source.title !== "string" || !source.title.trim())) throw Error("教材來源缺少名稱或識別碼重複");
     for (const [index, concept] of data.concepts.entries()) {
       const q = concept.quiz;
       if (concept.id !== chapter.concepts[index].id || concept.title !== chapter.concepts[index].title ||
@@ -35,6 +36,7 @@
           if (!["text", "formula", "image", "diagram"].includes(block.type)) throw Error("未知教學區塊");
           if (["text", "formula"].includes(block.type) && typeof block.text !== "string") throw Error("缺少文字或公式");
           if (block.type === "image" && (!/^assets\/images\/[a-zA-Z0-9_./-]+\.(svg|png|jpg|jpeg|webp)$/.test(block.src) || block.src.includes("..") || !block.alt)) throw Error("圖片路徑或替代文字錯誤");
+          if (block.type === "diagram") validateDiagram(block);
         }
       }
       if (concept.numeric) {
@@ -43,6 +45,20 @@
       }
     }
     return data;
+  }
+  function validateDiagram(block) {
+    if (block.kind === "bode" && Number.isFinite(block.cutoff) && block.cutoff > 0 && Number.isFinite(block.gain) && block.gain > 0 && ["Hz", "rad/s"].includes(block.unit)) return;
+    if (block.kind === "vector" && [block.vector, block.onto].every(v => Array.isArray(v) && v.length === 3 && v.every(Number.isFinite)) && block.onto.some(x => x !== 0)) return;
+    if (block.kind === "xy" && typeof block.xLabel === "string" && block.xLabel.trim() && typeof block.yLabel === "string" && block.yLabel.trim() &&
+        Array.isArray(block.points) && block.points.length >= 2 && block.points.every((p, i) => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite) && (i === 0 || p[0] > block.points[i - 1][0]))) return;
+    throw Error("圖表資料或座標單位不完整");
+  }
+  function resumeConcept(chapters, completed, lastId) {
+    const entries = chapters.flatMap(chapter => chapter.concepts.map(concept => ({ chapter, concept })));
+    const last = entries.find(entry => entry.concept.id === lastId);
+    if (last && !completed.includes(lastId)) return last;
+    return entries.find(entry => entry.chapter === last?.chapter && !completed.includes(entry.concept.id)) ||
+      entries.find(entry => !completed.includes(entry.concept.id)) || last || entries[0] || null;
   }
   function checkNumeric(raw, answer, tolerance) {
     const text = String(raw).trim();
@@ -65,25 +81,33 @@
   function storage(storageObject) {
     let available = true;
     let completed = [];
+    let lastId = null;
     try {
       const saved = JSON.parse(storageObject.getItem(KEY) || "[]");
       completed = Array.isArray(saved) ? [...new Set(saved.filter(id => typeof id === "string"))] : [];
+      lastId = storageObject.getItem(KEY + ":last") || null;
       storageObject.setItem(KEY + ":probe", "1");
       storageObject.removeItem(KEY + ":probe");
     } catch { available = false; }
     return {
       get available() { return available; },
       get completed() { return [...completed]; },
+      get lastId() { return lastId; },
+      visit(id) {
+        lastId = id;
+        try { storageObject.setItem(KEY + ":last", id); } catch { available = false; }
+      },
       complete(id) {
         completed = [...new Set([...completed, id])];
         try { storageObject.setItem(KEY, JSON.stringify(completed)); } catch { available = false; }
       },
       reset() {
         completed = [];
-        try { storageObject.removeItem(KEY); } catch { available = false; }
+        lastId = null;
+        try { storageObject.removeItem(KEY); storageObject.removeItem(KEY + ":last"); } catch { available = false; }
       }
     };
   }
-  scope.LectureCore = { validateCatalog, validateLesson, checkNumeric, bode, projectVector, storage };
+  scope.LectureCore = { validateCatalog, validateLesson, checkNumeric, bode, projectVector, resumeConcept, storage };
   if (typeof module !== "undefined") module.exports = scope.LectureCore;
 })(typeof window === "undefined" ? globalThis : window);

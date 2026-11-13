@@ -123,4 +123,3 @@ window.LectureFigures = (() => {
     throw Error("未支援的圖解格式");
   } };
 })();
-

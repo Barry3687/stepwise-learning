@@ -42,7 +42,16 @@ API 相容介面參考 https://console.groq.com/docs/openai 。
 
 ## 後續新增教材
 
-先請 AI 讀取 AGENTS.md，提供教材與目標章節，確認觀念大綱後製作內容。資料格式與圖表參數見 content/FORMAT.md。更新 content/catalog.json 的章節與穩定觀念 ID，首頁依清單呈現章節。
+使用者操作步驟見 [新增章節](https://barry3687.github.io/stepwise-learning/getting-started.html)。提供教材與章節範圍給專案中的 AI，先讀 AGENTS.md，確認大綱後製作教學資料，執行工具加入網站，再驗收與發布。
+
+```sh
+node scripts/chapters.js add "你的教學資料.json"
+node scripts/chapters.js check
+```
+
+資料格式與圖表參數見 content/FORMAT.md。工具會建立頁面與來源檔並更新 catalog，首頁及章節導覽依清單呈現。現有章節修改後執行 check，確認頁面、題目與圖片路徑一致。網站目前尚無直接上傳 PDF 自動生成課程的介面。
+
+首頁可接續最後閱讀位置，章節卡片顯示已理解的觀念數量。章節頁內切換觀念時保留選項、提示、數值輸入及推導草稿；這些作答內容只在該頁的當次使用期間保留，重新整理後仍保存完成進度與最後位置。
 
 原始私人教材放入已忽略的 private/materials/。公開範圍確認後再放入可發布的整理內容，API key 由後端密鑰管理。
 
@@ -50,6 +59,7 @@ API 相容介面參考 https://console.groq.com/docs/openai 。
 
 ```sh
 node tests/core.test.js
+node tests/chapters.test.js
 python tests/server_test.py
 python tests/preview.py
 ```

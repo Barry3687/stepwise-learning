@@ -1,23 +1,12 @@
 "use strict";
 
-const progressKey = "lecture-step-by-step:progress:v1";
 const chapterList = document.querySelector("#chapter-list");
 const chapterNav = document.querySelector("#chapter-nav");
 const resetButton = document.querySelector("#reset-progress");
 let chapters = [];
-let completed = [];
-let storageAvailable = true;
-
-try {
-  const saved = JSON.parse(localStorage.getItem(progressKey) || "[]");
-  completed = Array.isArray(saved) ? saved.filter(id => typeof id === "string") : [];
-  const probeKey = progressKey + ":probe";
-  localStorage.setItem(probeKey, "1");
-  localStorage.removeItem(probeKey);
-} catch {
-  storageAvailable = false;
-  document.querySelector("#storage-note").textContent = "瀏覽器無法保存進度，本次仍可閱讀。";
-}
+let progressState;
+try { progressState = LectureCore.storage(localStorage); }
+catch { progressState = LectureCore.storage(null); }
 
 document.querySelector("#menu-toggle").addEventListener("click", event => {
   const open = event.currentTarget.getAttribute("aria-expanded") !== "true";
@@ -38,7 +27,7 @@ function showMessage(title, description) {
 
 function updateProgress() {
   const ids = new Set(chapters.flatMap(chapter => chapter.concepts.map(concept => concept.id)));
-  const count = [...new Set(completed)].filter(id => ids.has(id)).length;
+  const count = progressState.completed.filter(id => ids.has(id)).length;
   const bar = document.querySelector("#progress");
   bar.max = Math.max(ids.size, 1);
   bar.value = count;
@@ -46,18 +35,19 @@ function updateProgress() {
     ? `${count} / ${ids.size} 個觀念已理解`
     : "尚未加入教材";
   resetButton.disabled = count === 0;
+  if (!progressState.available) document.querySelector("#storage-note").textContent = "瀏覽器無法保存進度，本次仍可閱讀。";
+  const resume = LectureCore.resumeConcept(chapters, progressState.completed, progressState.lastId);
+  const link = document.querySelector("#resume-learning");
+  link.hidden = !resume;
+  if (resume) {
+    link.href = `${resume.chapter.path}#${resume.concept.id}`;
+    link.textContent = `${progressState.lastId ? "接續學習" : "開始學習"}：${resume.concept.title} →`;
+  }
 }
 
 resetButton.addEventListener("click", () => {
   if (!window.confirm("要重設這個瀏覽器的學習進度嗎？")) return;
-  completed = [];
-  if (storageAvailable) {
-    try {
-      localStorage.removeItem(progressKey);
-    } catch {
-      document.querySelector("#storage-note").textContent = "無法更新瀏覽器中的進度，請檢查儲存設定。";
-    }
-  }
+  progressState.reset();
   updateProgress();
 });
 
@@ -66,14 +56,6 @@ async function loadCatalog() {
     const response = await fetch("content/catalog.json");
     if (!response.ok) throw new Error("無法讀取章節清單");
     const catalog = LectureCore.validateCatalog(await response.json());
-    if (catalog.version !== 1 || !Array.isArray(catalog.chapters)) throw new Error("章節格式不正確");
-    for (const chapter of catalog.chapters) {
-      if (typeof chapter.title !== "string" || typeof chapter.path !== "string" ||
-          !Array.isArray(chapter.concepts) || !/^chapters\/[a-z0-9-]+\.html$/.test(chapter.path) ||
-          chapter.concepts.some(concept => typeof concept.id !== "string")) {
-        throw new Error("章節資料不完整");
-      }
-    }
     chapters = catalog.chapters;
     document.querySelector("#chapter-count").textContent = `${chapters.length} 個章節`;
     chapterNav.replaceChildren();
@@ -93,7 +75,8 @@ async function loadCatalog() {
       const title = document.createElement("h3");
       title.textContent = chapter.title;
       const description = document.createElement("p");
-      description.textContent = `${chapter.concepts.length} 個觀念 · 循序學習`;
+      const count = chapter.concepts.filter(concept => progressState.completed.includes(concept.id)).length;
+      description.textContent = `${chapter.concepts.length} 個觀念 · 已理解 ${count} 個`;
       card.append(title, description);
       chapterList.append(card);
     }

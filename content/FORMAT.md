@@ -2,6 +2,21 @@
 
 先讀 AGENTS.md，取得使用者教材、公開範圍並確認大綱。
 
+## 建議流程
+
+先依下面格式整理成教學 JSON，再執行新增工具。圖片先放進 assets/images/ 的章節資料夾。
+
+```sh
+node scripts/chapters.js add "你的教學資料.json"
+node scripts/chapters.js check
+```
+
+工具會檢查資料、來源、題目與圖片，建立章節頁、lesson.json、來源副本 sources.json，再更新 catalog.json。已有同名章節會停止，寫入失敗會回復本輪新增檔案。它負責整合資料，教學是否正確仍須依教材驗收。
+
+lesson.json 的 sources 是網頁使用的來源資料；sources.json 是匯入時建立的可讀副本，之後修改來源時請同步維護。
+
+## 手動維護的檔案對應
+
 1. 在 catalog.json 加入章節 id、title、path、concepts。章節 ID 例如 ch01-vectors，path 為 chapters/ch01-vectors.html。
 2. 複製 chapters/lesson.html 至章節 path，在 body 加上 data-chapter="ch01-vectors"。
 3. 在 content/ch01-vectors/lesson.json 儲存以下結構。來源資料填實際教材，不沿用測試資料。
