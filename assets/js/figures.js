@@ -28,6 +28,7 @@ window.LectureFigures = (() => {
         !Number.isFinite(spec.gain) || spec.gain <= 0) throw Error("波德圖參數錯誤");
     const svg = canvas("一階低通系統波德圖", `截止頻率 ${spec.cutoff} ${spec.unit}，增益 ${spec.gain}。藍線為實際計算，虛線標示截止頻率。`, 570);
     const gainDB = 20 * Math.log10(spec.gain);
+    const frequencyName = spec.unit === "rad/s" ? "ωc" : "fc";
     const x = exponent => 75 + (exponent + 2) * 140;
     const magY = db => 70 + (gainDB + 5 - db) * 3.6;
     const phaseY = degrees => 350 + (-degrees) * 1.6;
@@ -58,8 +59,8 @@ window.LectureFigures = (() => {
     line(svg, x(0), 345, x(0), 500, "#f4c77f", "5 4");
     label(svg, 75, 35, "幅值（dB）", "start");
     label(svg, 75, 320, "相位（°）", "start");
-    label(svg, 390, 115, "fc：相對直流增益 −3.01 dB", "start");
-    label(svg, 390, 415, "fc：−45°", "start");
+    label(svg, 390, 115, `${frequencyName}：相對直流增益 −3.01 dB`, "start");
+    label(svg, 390, 415, `${frequencyName}：−45°`, "start");
     label(svg, 350, 558, `頻率（${spec.unit}，對數刻度）`);
     return svg;
   }
@@ -122,3 +123,4 @@ window.LectureFigures = (() => {
     throw Error("未支援的圖解格式");
   } };
 })();
+
