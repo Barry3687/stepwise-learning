@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>觀念學習 · 循序漸進</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/core.js" defer></script>
+  <script src="../assets/js/figures.js" defer></script>
+  <script src="../assets/js/lesson.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳至內容</a>
+  <header class="mobile-bar"><span>循序漸進</span><button id="menu-toggle" aria-expanded="false" aria-controls="sidebar">章節選單</button></header>
+  <aside id="sidebar" class="sidebar" aria-label="學習導覽">
+    <a class="brand" href="../index.html"><span class="brand-icon" aria-hidden="true">循</span><span>循序漸進<small>STEP BY STEP</small></span></a>
+    <a class="nav-home" href="../index.html">返回學習首頁 <span aria-hidden="true">↗</span></a>
+    <nav aria-label="觀念導覽"><p class="sidebar-label">本章觀念</p><div id="concept-nav"></div></nav>
+    <div class="progress-panel"><p class="sidebar-label">學習進度</p><p id="progress-label">讀取中</p><progress id="progress" value="0" max="1" aria-label="本章學習進度"></progress><p id="storage-note" class="fine-print">進度保存在目前瀏覽器。</p><button id="reset-progress" class="text-button">重設學習進度</button></div>
+  </aside>
+  <main id="main" tabindex="-1">
+    <div class="breadcrumb"><a href="../index.html">學習首頁</a> / <span id="chapter-name">觀念學習</span></div>
+    <div id="lesson-content" aria-live="polite"><p>正在讀取教材…</p></div>
+    <footer>循序漸進 <span>一次理解一個觀念</span></footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>循序漸進 · 一次理解一個觀念</title>
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/js/core.js" defer></script>
+  <script src="assets/js/site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳至內容</a>
+  <header class="mobile-bar">
+    <span>循序漸進</span>
+    <button id="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar">章節選單</button>
+  </header>
+  <aside id="sidebar" class="sidebar" aria-label="學習導覽">
+    <a class="brand" href="index.html"><span class="brand-icon" aria-hidden="true">循</span><span>循序漸進<small>STEP BY STEP</small></span></a>
+    <p class="sidebar-label">我的學習空間</p>
+    <a class="nav-home" href="index.html" aria-current="page">學習首頁 <span aria-hidden="true">↗</span></a>
+    <nav aria-label="章節導覽"><p class="sidebar-label">課程章節</p><div id="chapter-nav"><p class="muted">正在讀取章節…</p></div></nav>
+    <div class="progress-panel">
+      <p class="sidebar-label">學習進度</p>
+      <p id="progress-label">尚未加入教材</p>
+      <progress id="progress" value="0" max="1" aria-label="已完成的觀念"></progress>
+      <p id="storage-note" class="fine-print">進度保存在目前瀏覽器。</p>
+      <button id="reset-progress" class="text-button" type="button" disabled>重設學習進度</button>
+    </div>
+  </aside>
+  <main id="main" tabindex="-1">
+    <div class="breadcrumb">我的學習空間 <span aria-hidden="true">/</span> 學習首頁</div>
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">慢慢學，也能理解得很深。</p>
+      <h1 id="page-title">一次，理解<br><span>一個觀念。</span></h1>
+      <p class="lead">從直覺走向公式，把推導中卡住的那一步弄清楚。<br>學完一個觀念，就用一道基礎題確認理解。</p>
+      <div class="tags"><span>逐步推導</span><span>圖解輔助</span><span>隨堂練習</span></div>
+    </section>
+    <section class="chapters-section" aria-labelledby="chapters-title">
+      <div class="section-heading"><h2 id="chapters-title">我的章節</h2><span id="chapter-count" class="muted">讀取中</span></div>
+      <div id="chapter-list" aria-live="polite"></div>
+    </section>
+    <section class="learning-flow" aria-labelledby="flow-title">
+      <h2 id="flow-title">每個觀念，都有清楚的學習順序</h2>
+      <ol class="steps">
+        <li><span class="step-number">01</span><h3>先建立直覺</h3><p>知道它能解決什麼，再連結先備知識。</p></li>
+        <li><span class="step-number">02</span><h3>跟著推導與圖解</h3><p>看懂符號與條件，逐步走過重要變形。</p></li>
+        <li><span class="step-number">03</span><h3>做題確認理解</h3><p>先作答，再看提示與解析，準備好再繼續。</p></li>
+      </ol>
+    </section>
+    <footer>循序漸進 <span>依教材學習 · 依自己的節奏前進</span></footer>
+  </main>
+</body>
+</html>

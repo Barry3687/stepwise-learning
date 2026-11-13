@@ -1,0 +1,28 @@
+{
+  "id": "ch99-interface-check",
+  "title": "介面驗收資料（非正式教材）",
+  "sources": [{"id":"test","title":"自行編寫的介面測試資料，僅供功能驗收","section":"測試區"}],
+  "concepts": [
+    {
+      "id":"ch99-c01", "title":"XYZ 圖與選擇題驗收", "goal":"測試圖表、選擇題、數值題與進度保存。", "prerequisites":["本頁只用於驗收"], "sources":["test"],
+      "sections":[
+        {"title":"圖表測試","origin":"自編測試資料","blocks":[
+          {"type":"text","text":"以下向量 a = (2, 1, 2)，投影方向 b = (1, 0, 0)。投影為 (2, 0, 0)。"},
+          {"type":"formula","text":"\\operatorname{proj}_{\\mathbf b}\\mathbf a=\\frac{\\mathbf a\\cdot\\mathbf b}{\\mathbf b\\cdot\\mathbf b}\\mathbf b"},
+          {"type":"diagram","kind":"vector","vector":[2,1,2],"onto":[1,0,0],"caption":"XYZ 圖驗收，投影結果 (2, 0, 0)。"},
+          {"type":"diagram","kind":"xy","points":[[-2,4],[-1,1],[0,0],[1,1],[2,4]],"xLabel":"x（無因次）","yLabel":"y（無因次）","caption":"y=x² 的五個離散資料點連線，只用於繪圖功能驗收。"}
+        ]}
+      ],
+      "quiz":{"prompt":"a 在 X 軸方向上的投影是哪一個？","options":["(2, 0, 0)","(0, 1, 0)","(0, 0, 2)","(2, 1, 2)"],"answer":0,"hint":"保留 X 分量，另外兩個分量為零。","explanations":["X 分量為 2，所以投影為 (2, 0, 0)。","這是 Y 軸方向分量。","這是 Z 軸方向分量。","這是原向量，仍含另外兩軸分量。"]},
+      "numeric":{"prompt":"X 分量是多少？","answer":2,"tolerance":0.001,"unit":"無因次"}
+    },
+    {
+      "id":"ch99-c02", "title":"波德圖與章節完成驗收", "goal":"檢查對數刻度及截止頻率數值。", "prerequisites":["本頁只用於驗收"], "sources":["test"],
+      "sections":[{"title":"一階低通測試","origin":"自編測試資料","blocks":[
+        {"type":"formula","text":"G(s)=\\frac{1}{1+s/10}"},
+        {"type":"diagram","kind":"bode","cutoff":10,"gain":1,"unit":"rad/s","caption":"截止角頻率 10 rad/s，實際幅值 −3.01 dB、相位 −45°。"}
+      ]}],
+      "quiz":{"prompt":"在截止頻率，這個系統的相位為多少？","options":["0°","−45°","−90°","45°"],"answer":1,"hint":"相位為 −arctan(ω/ωc)。","explanations":["0° 是低頻極限。","ω/ωc=1，所以相位為 −45°。","−90° 是高頻極限。","此低通系統的相位為負。"]}
+    }
+  ]
+}
