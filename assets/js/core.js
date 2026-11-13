@@ -78,6 +78,13 @@
     const scale = vector.reduce((sum, x, i) => sum + x * onto[i], 0) / denominator;
     return onto.map(x => x * scale);
   }
+  function planeProjections([x, y, z]) {
+    return { XY: [x, y, 0], XZ: [x, 0, z], YZ: [0, y, z] };
+  }
+  function projectSpace([x, y, z]) {
+    const elevation = 24 * Math.PI / 180;
+    return [Math.SQRT1_2 * (y - x), Math.sin(elevation) * Math.SQRT1_2 * (x + y) - Math.cos(elevation) * z];
+  }
   function storage(storageObject) {
     let available = true;
     let completed = [];
@@ -108,6 +115,6 @@
       }
     };
   }
-  scope.LectureCore = { validateCatalog, validateLesson, checkNumeric, bode, projectVector, resumeConcept, storage };
+  scope.LectureCore = { validateCatalog, validateLesson, checkNumeric, bode, projectVector, planeProjections, projectSpace, resumeConcept, storage };
   if (typeof module !== "undefined") module.exports = scope.LectureCore;
 })(typeof window === "undefined" ? globalThis : window);

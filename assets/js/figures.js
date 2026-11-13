@@ -69,31 +69,74 @@ window.LectureFigures = (() => {
     if (vectors.some(v => !Array.isArray(v) || v.length !== 3 || v.some(x => !Number.isFinite(x)))) throw Error("空間圖需要兩個三維向量");
     const projection = LectureCore.projectVector(spec.vector, spec.onto);
     const extent = Math.max(1, ...vectors.flat().map(Math.abs), ...projection.map(Math.abs));
-    const scale = 85 / extent;
-    const project = v => [310 + scale * (v[0] - .65 * v[1]), 240 + scale * (.35 * v[0] + .45 * v[1] - v[2])];
-    const svg = canvas("XYZ 向量與投影示意圖", `向量 a = ${spec.vector.join(", ")}，投影方向 b = ${spec.onto.join(", ")}，投影為 ${projection.map(v => v.toFixed(2)).join(", ")}。斜投影示意，畫面角度不代表實際空間夾角。`, 410);
+    const scale = 110 / extent;
+    const project = vector => {
+      const [x, y] = LectureCore.projectSpace(vector);
+      return [340 + scale * x, 305 + scale * y];
+    };
+    const svg = canvas("XYZ 向量與三平面投影", `向量 a = ${spec.vector.join(", ")}，方向 b = ${spec.onto.join(", ")}，proj_b(a) = ${projection.map(v => v.toFixed(2)).join(", ")}。X 向左下、Y 向右下、Z 向上。每個向量端點以虛線投影至 XY、XZ、YZ 平面。正交投影示意，畫面角度不代表實際空間夾角。`, 540);
     const defs = node("defs");
     const markerId = `arrow-${++serial}`;
-    const marker = node("marker", { id: markerId, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse" });
-    marker.append(node("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "context-stroke" }));
+    const marker = node("marker", { id: markerId, viewBox: "0 0 8 8", refX: 7, refY: 4, markerWidth: 7, markerHeight: 7, markerUnits: "userSpaceOnUse", orient: "auto" });
+    marker.append(node("path", { d: "M 0 1 L 7 4 L 0 7 z", fill: "context-stroke" }));
     defs.append(marker); svg.append(defs);
     const origin = project([0, 0, 0]);
+    const items = [[spec.vector, "a", "#8dbbff"], [spec.onto, "b", "#f4c77f"], [projection, "proj_b(a)", "#8fe0bf"]];
+    const bounds = [0, 1, 2].map(axis => [Math.min(0, ...items.map(([v]) => v[axis])), Math.max(extent * 1.3, ...items.map(([v]) => v[axis]))]);
+    const planes = [["XY", 0, 1, "#8dbbff"], ["XZ", 0, 2, "#b8a5ee"], ["YZ", 1, 2, "#8fe0bf"]];
+    for (const [name, first, second, color] of planes) {
+      const corners = [[0, 0], [1, 0], [1, 1], [0, 1]].map(([a, b]) => {
+        const v = [0, 0, 0]; v[first] = bounds[first][a]; v[second] = bounds[second][b]; return v;
+      });
+      svg.append(node("polygon", { points: corners.map(v => project(v).join(",")).join(" "), fill: color, "fill-opacity": .045, stroke: color, "stroke-opacity": .22, "stroke-width": .7 }));
+      for (let i = 1; i <= 3; i++) {
+        for (const [a, b] of [[first, second], [second, first]]) {
+          const from = [0, 0, 0], to = [0, 0, 0];
+          from[a] = to[a] = bounds[a][0] + (bounds[a][1] - bounds[a][0]) * i / 4;
+          from[b] = bounds[b][0]; to[b] = bounds[b][1];
+          const p = project(from), q = project(to);
+          svg.append(node("line", { x1: p[0], y1: p[1], x2: q[0], y2: q[1], stroke: color, "stroke-width": .5, "stroke-opacity": .14 }));
+        }
+      }
+      const center = corners.reduce((sum, v) => sum.map((x, i) => x + v[i] / 4), [0, 0, 0]);
+      const position = project(center);
+      label(svg, position[0], position[1] + 8, `${name} 平面`);
+    }
+    for (const [v, , color] of items) {
+      const endpoint = project(v);
+      for (const foot of Object.values(LectureCore.planeProjections(v))) {
+        const p = project(foot);
+        if (Math.hypot(endpoint[0] - p[0], endpoint[1] - p[1]) > .1) {
+          svg.append(node("line", { x1: endpoint[0], y1: endpoint[1], x2: p[0], y2: p[1], stroke: color, "stroke-width": 1, "stroke-dasharray": "4 5", "stroke-opacity": .75 }));
+        }
+        if (Math.hypot(p[0] - origin[0], p[1] - origin[1]) > .1) {
+          svg.append(node("line", { x1: origin[0], y1: origin[1], x2: p[0], y2: p[1], stroke: color, "stroke-width": .8, "stroke-dasharray": "3 5", "stroke-opacity": .38 }));
+        }
+        svg.append(node("circle", { cx: p[0], cy: p[1], r: 2, fill: "#131d2d", stroke: color, "stroke-width": .9 }));
+      }
+    }
     for (let axis = 0; axis < 3; axis++) {
       const end = [0, 0, 0]; end[axis] = extent * 1.7;
-      const negative = [0, 0, 0]; negative[axis] = -extent * .6;
+      const negative = [0, 0, 0]; negative[axis] = -extent * .4;
       const p = project(end), n = project(negative);
-      line(svg, ...n, ...origin, "#7185a0", "4 4");
-      svg.append(node("line", { x1: origin[0], y1: origin[1], x2: p[0], y2: p[1], stroke: "#7185a0", "marker-end": `url(#${markerId})` }));
-      label(svg, p[0] + 12, p[1], ["X", "Y", "Z"][axis]);
+      line(svg, ...n, ...origin, "#7185a0", "3 5");
+      svg.append(node("line", { x1: origin[0], y1: origin[1], x2: p[0], y2: p[1], stroke: "#9cacc2", "stroke-width": 1, "marker-end": `url(#${markerId})` }));
+      label(svg, p[0] + (axis === 0 ? -14 : 12), p[1], ["X", "Y", "Z"][axis]);
     }
-    label(svg, origin[0] - 12, origin[1] + 20, "O");
-    for (const [v, name, color] of [[spec.vector, "a", "#8dbbff"], [spec.onto, "b", "#f4c77f"], [projection, "proj_b(a)", "#8fe0bf"]]) {
+    label(svg, origin[0] + 12, origin[1] + 18, "O");
+    items.forEach(([v, name, color], index) => {
       const p = project(v);
-      svg.append(node("line", { x1: origin[0], y1: origin[1], x2: p[0], y2: p[1], stroke: color, "stroke-width": 3, "marker-end": `url(#${markerId})` }));
-      label(svg, p[0] + 12, p[1] - 12, `${name} (${v.map(x => Number(x.toFixed(2))).join(", ")})`, "start");
-    }
-    line(svg, ...project(spec.vector), ...project(projection), "#8fe0bf", "5 4");
-    label(svg, 340, 385, "斜投影示意 · 各軸視覺尺度不同，角度以座標計算為準");
+      if (Math.hypot(p[0] - origin[0], p[1] - origin[1]) > .1) {
+        svg.append(node("line", { x1: origin[0], y1: origin[1], x2: p[0], y2: p[1], stroke: color, "stroke-width": 1.7, "stroke-linecap": "round", "marker-end": `url(#${markerId})` }));
+        label(svg, p[0] + (index === 0 ? 10 : -10), p[1] + (index === 1 ? -12 : -10), name, index === 0 ? "start" : "end");
+      }
+      const y = 445 + index * 23;
+      line(svg, 42, y - 4, 62, y - 4, color);
+      label(svg, 72, y, `${name} = (${v.map(x => Number(x.toFixed(3))).join(", ")})`, "start");
+    });
+    label(svg, 638, 449, "虛線：向量端點至三個座標平面的投影", "end");
+    label(svg, 638, 476, "X 左下 · Y 右下 · Z 向上", "end");
+    label(svg, 340, 525, "正交投影示意 · 空間長度與夾角以實際座標計算為準");
     return svg;
   }
   function xyDiagram(spec) {
