@@ -17,8 +17,8 @@ window.LectureFigures = (() => {
   function line(svg, x1, y1, x2, y2, color = "#888888", dash = "") {
     svg.append(node("line", { x1, y1, x2, y2, stroke: color, "stroke-dasharray": dash, "stroke-width": 1.5 }));
   }
-  function label(svg, x, y, text, anchor = "middle") {
-    svg.append(node("text", { x, y, fill: "#eeeeee", "font-size": 14.4, "text-anchor": anchor }, text));
+  function label(svg, x, y, text, anchor = "middle", fontSize = 14.4) {
+    svg.append(node("text", { x, y, fill: "#eeeeee", "font-size": fontSize, "text-anchor": anchor }, text));
   }
   function plot(svg, points, color = "#eeeeee") {
     svg.append(node("polyline", { points: points.map(p => p.join(",")).join(" "), fill: "none", stroke: color, "stroke-width": 2.5 }));
@@ -98,9 +98,6 @@ window.LectureFigures = (() => {
           svg.append(node("line", { x1: p[0], y1: p[1], x2: q[0], y2: q[1], stroke: color, "stroke-width": .5, "stroke-opacity": .14 }));
         }
       }
-      const center = corners.reduce((sum, v) => sum.map((x, i) => x + v[i] / 4), [0, 0, 0]);
-      const position = project(center);
-      label(svg, position[0], position[1] + 8, `${name} 平面`);
     }
     for (const [v, , color] of items) {
       const endpoint = project(v);
@@ -172,7 +169,6 @@ window.LectureFigures = (() => {
       const lo=point.map(v=>Math.min(0,v)), hi=point.map(v=>Math.max(extent*1.15,v));
       const corners=[[0,0],[1,0],[1,1],[0,1]].map(([u,v])=>{const q=[0,0,0];q[a]=u?hi[a]:lo[a];q[b]=v?hi[b]:lo[b];return project(q);});
       svg.append(node("polygon",{points:corners.map(q=>q.join(",")).join(" "),fill:"#ccc","fill-opacity":.035,stroke:"#777","stroke-opacity":.3,"stroke-width":.7}));
-      const center=corners.reduce((acc,q)=>acc.map((v,i)=>v+q[i]/4),[0,0]);label(svg,...center,name);
     });
     ["X","Y","Z"].forEach((name,axis)=>{
       const end=[0,0,0];end[axis]=extent*1.65;const q=project(end);
@@ -182,7 +178,7 @@ window.LectureFigures = (() => {
     });
     const segments=[[p,foot,`z₁ = ${z}`],[foot,project([x,0,0]),`y₁ = ${y}`],[foot,project([0,y,0]),`x₁ = ${x}`]];
     segments.forEach(([a,b,name],i)=>{
-      if(Math.hypot(a[0]-b[0],a[1]-b[1])>.1){line(svg,...a,...b,"#eee","4 5"); label(svg,(a[0]+b[0])/2+(i===0?18:0),(a[1]+b[1])/2+(i===0?0:18),name);}
+      if(Math.hypot(a[0]-b[0],a[1]-b[1])>.1){line(svg,...a,...b,"#eee","4 5"); label(svg,(a[0]+b[0])/2+(i===0?18:0),(a[1]+b[1])/2+(i===0?0:18),name,"middle",10);}
     });
     [[x,0,z],[0,y,z]].forEach(v=>line(svg,...p,...project(v),"#777","2 6"));
     svg.append(node("circle",{cx:foot[0],cy:foot[1],r:3,fill:"#161616",stroke:"#ddd"}));
