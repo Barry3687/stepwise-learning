@@ -83,7 +83,7 @@ legend { font-size: 1.0625rem; margin-bottom: 14px; white-space: pre-wrap; }
 .option:has(input:checked) { border-color: var(--accent); background: #242424; }
 input[type=radio], input[type=checkbox] { accent-color: var(--accent); }
 .action-button, .secondary-button { display: inline-block; border-radius: 7px; padding: 9px 16px; margin: 6px 10px 6px 0; border: 1px solid #555555; }
-.action-button { background: #dedede; color: #fff; }
+.action-button { background: #dedede; color: #111; }
 .secondary-button { background: transparent; color: #eeeeee; }
 .feedback { white-space: pre-wrap; color: #dddddd; font-size: 0.875rem; }
 .feedback.correct { color: #ffffff; }
@@ -130,3 +130,5 @@ input, textarea, select { color: var(--text); background: #222; border: 1px soli
 mjx-container { max-width: 100%; }
 @media (max-width: 1000px) and (min-width: 761px) { main { padding-left: 30px; padding-right: 30px; } }
 @media (max-width: 760px) { .quiz-panel, .review-panel, .upload-panel, .coordinate-lab { padding: 16px; } .intro h1 { font-size: 2rem; } }
+
+.guide-content a.action-button, .guide-content a.action-button:visited { color: #111; background: #dedede; text-decoration: none; }

@@ -160,7 +160,7 @@ window.LectureFigures = (() => {
     if (!Array.isArray(point) || point.length !== 3 || point.some(v => !Number.isFinite(v) || Math.abs(v) > 1e6)) throw Error("請輸入範圍內的有限座標");
     const [x,y,z] = point, extent = Math.max(1, ...point.map(Math.abs));
     const project = v => { const p = LectureCore.projectSpace(v); return [340 + p[0]*105/extent, 265 + p[1]*105/extent]; };
-    const svg = canvas("立體卡氏座標與分量投影", `目標點 (${point.join(", ")})，X 左下、Y 右下、Z 向上。虛線標示 x、y、z 分量。`, 470);
+    const svg = canvas("立體卡氏座標與分量投影", `目標點 (${point.join(", ")})，X 左下、Y 右下、Z 向上。虛線標示 x、y、z 分量。`, Math.max(375, project(point)[1] + 30));
     const origin=project([0,0,0]), p=project(point), foot=project([x,y,0]);
     const defs=node("defs"), id=`point-arrow-${++serial}`;
     const marker=node("marker",{id,viewBox:"0 0 8 8",refX:7,refY:4,markerWidth:6,markerHeight:6,markerUnits:"userSpaceOnUse",orient:"auto"});
@@ -189,8 +189,8 @@ window.LectureFigures = (() => {
     let caption=`卡氏座標 (x, y, z) = (${point.join(", ")})`;
     if(system==="cylindrical")caption=`圓柱座標：ρ = ${rho.toFixed(3)}，φ = ${deg(phi)}，z = ${z}`;
     if(system==="spherical")caption=`球面座標：r = ${r.toFixed(3)}，θ = ${deg(theta)}，φ = ${deg(phi)}`;
-    label(svg,340,405,caption);label(svg,340,435,"φ 自 +X 朝 +Y；θ 自 +Z 測量。角度單位：度。");
-    label(svg,340,459,"等角投影示意；零長度分量不重畫。實際長度與夾角以座標計算。");
+    const description = svg.querySelector("desc");
+    description.textContent += ` ${caption}。φ 自 +X 朝 +Y；θ 自 +Z 測量，角度單位：度。等角投影示意，實際長度與夾角以座標計算。`;
     if(system!=="cartesian" && rho>0){
       const arc=[];const angle=Math.atan2(y,x);for(let i=0;i<=36;i++)arc.push(project([rho*Math.cos(angle*i/36),rho*Math.sin(angle*i/36),0]));plot(svg,arc,"#aaa");
       line(svg,...origin,...foot,"#aaa","2 4");

@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const core=require('../assets/js/core.js');
-function element(name){return {name,attrs:{},children:[],setAttribute(k,v){this.attrs[k]=String(v);},append(...nodes){this.children.push(...nodes);}};}
+function element(name){return {name,attrs:{},children:[],setAttribute(k,v){this.attrs[k]=String(v);},append(...nodes){this.children.push(...nodes);},querySelector(name){return this.children.find(n=>n.name===name);}};}
 const window={};vm.runInNewContext(fs.readFileSync(require.resolve('../assets/js/figures.js'),'utf8'),{window,LectureCore:core,document:{createElementNS(_ns,name){return element(name);}}});
 const walk=node=>[node,...node.children.flatMap(walk)];
 for(const point of [[2,1,2],[-2,1,-3],[0,0,0],[0,0,2]]){
@@ -11,7 +11,7 @@ for(const point of [[2,1,2],[-2,1,-3],[0,0,0],[0,0,2]]){
     const nodes=walk(window.LectureFigures.coordinateDiagram(point,mode));
     assert(nodes.every(n=>!Object.values(n.attrs).some(v=>/NaN|Infinity/.test(v))));
     assert(nodes.some(n=>n.name==='circle'&&n.attrs.r==='5'));
-    const text=nodes.filter(n=>n.name==='text').map(n=>n.textContent).join(' ');
+    const text=nodes.filter(n=>n.name==='text'||n.name==='desc').map(n=>n.textContent).join(' ');
     if(point.every(v=>v===0)&&mode==='spherical')assert(text.includes('未定義'));
   }
 }
