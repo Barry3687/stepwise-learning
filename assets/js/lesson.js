@@ -9,6 +9,7 @@ let catalog;
 let currentIndex = 0;
 let renderToken = 0;
 const drafts = new Map();
+const answerImages = new Map();
 const quizStates = new Map();
 
 function element(tag, text, className) {
@@ -75,11 +76,11 @@ function addReview(concept, host) {
   const label = element("label", "你的解題過程"); label.htmlFor = input.id;
   const consentLabel = element("label", undefined, "consent");
   const consent = element("input"); consent.type = "checkbox";
-  consentLabel.append(consent, document.createTextNode("同意將本題、相關教材節錄與我的輸入交給後端設定的模型服務檢查。"));
+  consentLabel.append(consent, document.createTextNode("同意將本題、相關教材節錄、選擇題答案、文字與算式圖片交給後端模型服務檢查。"));
   const result = element("div", undefined, "feedback"); result.setAttribute("role", "status");
   const status = element("p", "正在確認 AI 服務…", "fine-print");
-  const send = button("請 AI 檢查", async () => {
-    if (!input.value.trim()) { result.textContent = "請先輸入你的解題過程。"; return; }
+  const send = button("送出批改", async () => {
+    if (!input.value.trim() && !answerImages.has(concept.id)) { result.textContent = "請輸入解題過程或上傳算式圖片。"; return; }
     if (!consent.checked) { result.textContent = "請先確認資料傳送說明。"; return; }
     send.disabled = true; result.textContent = "正在檢查，請保留這個頁面…";
     try {
@@ -88,7 +89,7 @@ function addReview(concept, host) {
       let response;
       try {
         response = await fetch("/api/review", { method: "POST", headers: { "Content-Type": "application/json" }, signal: controller.signal,
-          body: JSON.stringify({ chapter: lesson.id, concept: concept.id, answer: input.value }) });
+          body: JSON.stringify({ chapter: lesson.id, concept: concept.id, answer: input.value, choice: quizStates.get(concept.id)?.choice ?? null, image: answerImages.get(concept.id) || null }) });
       } finally { clearTimeout(timer); }
       const data = await response.json();
       if (!response.ok) throw Error(data.error || "AI 服務暫時無法使用");
@@ -102,9 +103,9 @@ function addReview(concept, host) {
   fetch("/api/status").then(response => response.ok ? response.json() : Promise.reject())
     .then(data => {
       send.disabled = !data.enabled;
-      status.textContent = data.enabled ? "AI 檢查已啟用。請只輸入解題內容。" : "AI 檢查尚未啟用，需在本機後端設定金鑰與模型。";
+      status.textContent = data.enabled ? (data.vision ? "AI 文字與圖片批改已啟用。" : "AI 文字批改已啟用；圖片批改需設定視覺模型。") : "AI 檢查尚未啟用，需在本機後端設定金鑰與模型。";
     }).catch(() => { status.textContent = "此網站尚未連接 AI 後端，仍可閱讀教材、作答與查看解析。"; });
-  panel.append(label, input, consentLabel, send, status, result); host.append(panel);
+  panel.append(label, input, LectureWorkspace.screenshotInput(panel, concept.id, answerImages), consentLabel, send, status, result); host.append(panel);
 }
 function renderConcept() {
   const token = ++renderToken;
@@ -125,6 +126,9 @@ function renderConcept() {
     section.blocks.forEach(block => renderBlock(block, area));
     target.append(area);
   }
+  LectureWorkspace.setSubject(concept.subject || lesson.subject);
+  const vectorBlock = concept.sections.flatMap(s => s.blocks).find(b => b.type === "diagram" && b.kind === "vector");
+  if (vectorBlock) LectureWorkspace.coordinateLab(target, vectorBlock.vector);
   const sourcePanel = element("details", undefined, "sources");
   sourcePanel.append(element("summary", "本觀念的教材來源"));
   for (const source of lesson.sources.filter(source => concept.sources.includes(source.id))) {

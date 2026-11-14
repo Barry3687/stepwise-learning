@@ -82,7 +82,7 @@
     return { XY: [x, y, 0], XZ: [x, 0, z], YZ: [0, y, z] };
   }
   function projectSpace([x, y, z]) {
-    const elevation = 24 * Math.PI / 180;
+    const elevation = Math.asin(1 / Math.sqrt(3));
     return [Math.SQRT1_2 * (y - x), Math.sin(elevation) * Math.SQRT1_2 * (x + y) - Math.cos(elevation) * z];
   }
   function storage(storageObject) {

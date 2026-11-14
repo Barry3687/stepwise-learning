@@ -52,3 +52,5 @@ image 使用 src（以 assets/images/ 開頭）、alt、caption。diagram 使用
 catalog 的 concepts 必須與 lesson 的 id、title 及順序完全相同。根目錄首頁由 catalog 自動生成，章節側欄由 lesson 自動生成。
 
 文字、公式、圖片的教材／補充來源以 origin 與 sources 說明。sections 必須具備教學目標要求的實際內容，通過格式驗證不代表教學已正確。
+
+電磁學章節可在 lesson.json 根層或個別 concept 加入 `"subject": "electromagnetics"`，才啟用圓柱／球面座標切換；其他科目省略。

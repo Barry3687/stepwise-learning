@@ -1,5 +1,8 @@
 import importlib.util
 import json
+import base64
+import io
+import zipfile
 from pathlib import Path
 import tempfile
 import threading
@@ -29,6 +32,42 @@ class ServerTests(unittest.TestCase):
             self.assertNotIn("偽造教材", str(result))
             with self.assertRaises(ValueError):
                 server.review_context({**data, "chapter": "../../private"}, root)
+
+    def test_document_and_image_workflows(self):
+        def data(raw, mime="application/octet-stream"):
+            return "data:" + mime + ";base64," + base64.b64encode(raw).decode()
+        self.assertEqual(server.extract_document({"name": "chapter.md", "data": data("向量講義".encode())})["text"], "向量講義")
+        archive = io.BytesIO()
+        with zipfile.ZipFile(archive, "w") as z:
+            z.writestr("word/document.xml", '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Chapter notes</w:t></w:r></w:p></w:body></w:document>')
+        self.assertEqual(server.extract_document({"name": "chapter.docx", "data": data(archive.getvalue())})["text"], "Chapter notes")
+        from pypdf import PdfWriter
+        pdf = io.BytesIO(); writer = PdfWriter(); writer.add_blank_page(100, 100); writer.write(pdf)
+        with self.assertRaisesRegex(ValueError, "掃描版"):
+            server.extract_document({"name": "blank.pdf", "data": data(pdf.getvalue())})
+        with self.assertRaises(ValueError):
+            server.validate_image(data(b"not an image", "image/png"))
+        with self.assertRaises(ValueError):
+            server.organize_context({"name": "empty.txt", "text": ""})
+        self.assertEqual(server.organize_context({"name": "notes.txt", "text": "講義"})["來源檔名"], "notes.txt")
+
+    def test_multimodal_payload(self):
+        class Response:
+            def __enter__(self):
+                return io.StringIO(json.dumps({"choices": [{"message": {"content": "模型替身"}}]}))
+            def __exit__(self, *args):
+                pass
+        image = "data:image/png;base64," + base64.b64encode(b"\x89PNG\r\n\x1a\n").decode()
+        with patch.dict(server.os.environ, {"GROQ_API_KEY": "test-only", "LECTURE_MODEL": "text-test", "LECTURE_VISION_MODEL": "vision-test"}):
+            with patch.object(server, "urlopen", return_value=Response()) as call:
+                self.assertEqual(server.call_model({"image": image, "學生選項": 2, "學生解題過程": "我的算式"}), "模型替身")
+                payload = json.loads(call.call_args.args[0].data)
+                self.assertEqual(payload["model"], "vision-test")
+                self.assertEqual(payload["messages"][1]["content"][1]["image_url"]["url"], image)
+                self.assertIn("我的算式", payload["messages"][1]["content"][0]["text"])
+        with patch.dict(server.os.environ, {"GROQ_API_KEY": "test-only", "LECTURE_MODEL": "text-test", "LECTURE_VISION_MODEL": ""}):
+            with self.assertRaisesRegex(RuntimeError, "圖片"):
+                server.call_model({"image": image})
 
     def test_http_paths_and_model_failure(self):
         httpd = server.ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)

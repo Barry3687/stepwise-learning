@@ -65,3 +65,24 @@ python tests/preview.py
 ```
 
 最後一個指令在獨立暫存資料夾建立介面驗收章節，開啟 http://127.0.0.1:8001 。停止程序時移除暫存資料，不改正式 catalog。完整狀態見 TESTING.md。
+
+
+## 講義上傳、座標探索與算式批改
+
+首頁與章節上方的「講義與資料上傳區」支援拖曳或選檔。TXT/MD 直接預覽；PNG/JPG 顯示圖片；PDF 提供瀏覽器預覽。檔案只留當頁記憶體，不自動儲存或上傳 GitHub。PDF/DOCX 的文字解析與 AI 整理需要本機後端。PDF 請提供可選字的 100 頁內節錄，掃描版請改成清楚的圖片；DOCX 解析不保留排版或公式物件，務必對照原稿。
+
+從專案資料夾執行：
+
+```powershell
+python -m pip install -r backend/requirements.txt
+$env:GROQ_API_KEY="你的金鑰"
+$env:LECTURE_MODEL="你可用的文字模型識別碼"
+$env:LECTURE_VISION_MODEL="你可用且支援圖片的模型識別碼"
+python backend/server.py --port 8000
+```
+
+瀏覽 http://127.0.0.1:8000 。金鑰只在目前程序環境；不要把真正的金鑰寫入程式或提交。模型需在你的供應商帳號可用，未設定時網站會明確提示。公開 GitHub Pages 沒有此 Python 後端，仍可閱讀、作答、預覽檔案及使用座標工具。
+
+座標探索可輸入 XYZ；電磁學章節在 lesson.json 或 concept 設 `subject: "electromagnetics"`，上傳講義則由使用者勾選電磁學，才啟用圓柱／球面轉換。所有模式繪製相同物理點，採物理學 θ 自 +Z、φ 自 +X 朝 +Y 的定義。
+
+章節的 AI 作答區可貼上、拖曳或選擇算式截圖。選擇題答案、文字與圖片一起送出，需勾選資料傳送同意；圖片會縮至最長邊 1600 像素。移除圖片不影響文字與原有選擇題判分。AI 整理產生的內容仍是草稿，核對後再使用原本章節匯入流程。

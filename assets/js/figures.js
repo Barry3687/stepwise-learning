@@ -14,13 +14,13 @@ window.LectureFigures = (() => {
     svg.append(node("title", { id: id + "-title" }, title), node("desc", { id: id + "-desc" }, description));
     return svg;
   }
-  function line(svg, x1, y1, x2, y2, color = "#7185a0", dash = "") {
+  function line(svg, x1, y1, x2, y2, color = "#888888", dash = "") {
     svg.append(node("line", { x1, y1, x2, y2, stroke: color, "stroke-dasharray": dash, "stroke-width": 1.5 }));
   }
   function label(svg, x, y, text, anchor = "middle") {
-    svg.append(node("text", { x, y, fill: "#dbeafe", "font-size": 12, "text-anchor": anchor }, text));
+    svg.append(node("text", { x, y, fill: "#eeeeee", "font-size": 14.4, "text-anchor": anchor }, text));
   }
-  function plot(svg, points, color = "#8dbbff") {
+  function plot(svg, points, color = "#eeeeee") {
     svg.append(node("polyline", { points: points.map(p => p.join(",")).join(" "), fill: "none", stroke: color, "stroke-width": 2.5 }));
   }
   function bodeDiagram(spec) {
@@ -34,17 +34,17 @@ window.LectureFigures = (() => {
     const phaseY = degrees => 350 + (-degrees) * 1.6;
     for (let exponent = -2; exponent <= 2; exponent++) {
       const px = x(exponent);
-      line(svg, px, 65, px, 250, "#334155");
-      line(svg, px, 345, px, 500, "#334155");
+      line(svg, px, 65, px, 250, "#333333");
+      line(svg, px, 345, px, 500, "#333333");
       label(svg, px, 273, (spec.cutoff * 10 ** exponent).toPrecision(3));
       label(svg, px, 523, (spec.cutoff * 10 ** exponent).toPrecision(3));
     }
     for (const db of [0, -10, -20, -30, -40]) {
-      line(svg, 75, magY(gainDB + db), 635, magY(gainDB + db), "#334155");
+      line(svg, 75, magY(gainDB + db), 635, magY(gainDB + db), "#333333");
       label(svg, 64, magY(gainDB + db) + 4, (gainDB + db).toFixed(1), "end");
     }
     for (const deg of [0, -45, -90]) {
-      line(svg, 75, phaseY(deg), 635, phaseY(deg), "#334155");
+      line(svg, 75, phaseY(deg), 635, phaseY(deg), "#333333");
       label(svg, 64, phaseY(deg) + 4, String(deg), "end");
     }
     const magnitudes = [], phases = [];
@@ -54,9 +54,9 @@ window.LectureFigures = (() => {
       magnitudes.push([x(exponent), magY(result.magnitude)]);
       phases.push([x(exponent), phaseY(result.phase)]);
     }
-    plot(svg, magnitudes); plot(svg, phases, "#8fe0bf");
-    line(svg, x(0), 65, x(0), 250, "#f4c77f", "5 4");
-    line(svg, x(0), 345, x(0), 500, "#f4c77f", "5 4");
+    plot(svg, magnitudes); plot(svg, phases, "#cccccc");
+    line(svg, x(0), 65, x(0), 250, "#aaaaaa", "5 4");
+    line(svg, x(0), 345, x(0), 500, "#aaaaaa", "5 4");
     label(svg, 75, 35, "幅值（dB）", "start");
     label(svg, 75, 320, "相位（°）", "start");
     label(svg, 390, 115, `${frequencyName}：相對直流增益 −3.01 dB`, "start");
@@ -81,9 +81,9 @@ window.LectureFigures = (() => {
     marker.append(node("path", { d: "M 0 1 L 7 4 L 0 7 z", fill: "context-stroke" }));
     defs.append(marker); svg.append(defs);
     const origin = project([0, 0, 0]);
-    const items = [[spec.vector, "a", "#8dbbff"], [spec.onto, "b", "#f4c77f"], [projection, "proj_b(a)", "#8fe0bf"]];
+    const items = [[spec.vector, "a", "#eeeeee"], [spec.onto, "b", "#aaaaaa"], [projection, "proj_b(a)", "#cccccc"]];
     const bounds = [0, 1, 2].map(axis => [Math.min(0, ...items.map(([v]) => v[axis])), Math.max(extent * 1.3, ...items.map(([v]) => v[axis]))]);
-    const planes = [["XY", 0, 1, "#8dbbff"], ["XZ", 0, 2, "#b8a5ee"], ["YZ", 1, 2, "#8fe0bf"]];
+    const planes = [["XY", 0, 1, "#eeeeee"], ["XZ", 0, 2, "#aaaaaa"], ["YZ", 1, 2, "#cccccc"]];
     for (const [name, first, second, color] of planes) {
       const corners = [[0, 0], [1, 0], [1, 1], [0, 1]].map(([a, b]) => {
         const v = [0, 0, 0]; v[first] = bounds[first][a]; v[second] = bounds[second][b]; return v;
@@ -112,15 +112,15 @@ window.LectureFigures = (() => {
         if (Math.hypot(p[0] - origin[0], p[1] - origin[1]) > .1) {
           svg.append(node("line", { x1: origin[0], y1: origin[1], x2: p[0], y2: p[1], stroke: color, "stroke-width": .8, "stroke-dasharray": "3 5", "stroke-opacity": .38 }));
         }
-        svg.append(node("circle", { cx: p[0], cy: p[1], r: 2, fill: "#131d2d", stroke: color, "stroke-width": .9 }));
+        svg.append(node("circle", { cx: p[0], cy: p[1], r: 2, fill: "#111111", stroke: color, "stroke-width": .9 }));
       }
     }
     for (let axis = 0; axis < 3; axis++) {
       const end = [0, 0, 0]; end[axis] = extent * 1.7;
       const negative = [0, 0, 0]; negative[axis] = -extent * .4;
       const p = project(end), n = project(negative);
-      line(svg, ...n, ...origin, "#7185a0", "3 5");
-      svg.append(node("line", { x1: origin[0], y1: origin[1], x2: p[0], y2: p[1], stroke: "#9cacc2", "stroke-width": 1, "marker-end": `url(#${markerId})` }));
+      line(svg, ...n, ...origin, "#888888", "3 5");
+      svg.append(node("line", { x1: origin[0], y1: origin[1], x2: p[0], y2: p[1], stroke: "#bbbbbb", "stroke-width": 1, "marker-end": `url(#${markerId})` }));
       label(svg, p[0] + (axis === 0 ? -14 : 12), p[1], ["X", "Y", "Z"][axis]);
     }
     label(svg, origin[0] + 12, origin[1] + 18, "O");
@@ -149,8 +149,8 @@ window.LectureFigures = (() => {
     const svg = canvas(spec.title || "XY 座標圖", `${spec.xLabel} 對 ${spec.yLabel}，依提供的離散資料點連線。`);
     for (let i = 0; i <= 4; i++) {
       const vx = xmin + dx * i / 4, vy = ymin + dy * i / 4;
-      line(svg, x(vx), 60, x(vx), 260, "#334155");
-      line(svg, 75, y(vy), 605, y(vy), "#334155");
+      line(svg, x(vx), 60, x(vx), 260, "#333333");
+      line(svg, 75, y(vy), 605, y(vy), "#333333");
       label(svg, x(vx), 280, Number(vx.toPrecision(3)).toString());
       label(svg, 65, y(vy) + 4, Number(vy.toPrecision(3)).toString(), "end");
     }
@@ -159,7 +159,54 @@ window.LectureFigures = (() => {
     label(svg, 340, 314, spec.xLabel); label(svg, 75, 30, spec.yLabel, "start");
     return svg;
   }
-  return { render(spec) {
+  function coordinateDiagram(point, system = "cartesian") {
+    if (!Array.isArray(point) || point.length !== 3 || point.some(v => !Number.isFinite(v) || Math.abs(v) > 1e6)) throw Error("請輸入範圍內的有限座標");
+    const [x,y,z] = point, extent = Math.max(1, ...point.map(Math.abs));
+    const project = v => { const p = LectureCore.projectSpace(v); return [340 + p[0]*105/extent, 265 + p[1]*105/extent]; };
+    const svg = canvas("立體卡氏座標與分量投影", `目標點 (${point.join(", ")})，X 左下、Y 右下、Z 向上。虛線標示 x、y、z 分量。`, 470);
+    const origin=project([0,0,0]), p=project(point), foot=project([x,y,0]);
+    const defs=node("defs"), id=`point-arrow-${++serial}`;
+    const marker=node("marker",{id,viewBox:"0 0 8 8",refX:7,refY:4,markerWidth:6,markerHeight:6,markerUnits:"userSpaceOnUse",orient:"auto"});
+    marker.append(node("path",{d:"M0 1L7 4L0 7Z",fill:"#ddd"}));defs.append(marker);svg.append(defs);
+    [[0,1,"XY"],[0,2,"XZ"],[1,2,"YZ"]].forEach(([a,b,name])=>{
+      const lo=point.map(v=>Math.min(0,v)), hi=point.map(v=>Math.max(extent*1.15,v));
+      const corners=[[0,0],[1,0],[1,1],[0,1]].map(([u,v])=>{const q=[0,0,0];q[a]=u?hi[a]:lo[a];q[b]=v?hi[b]:lo[b];return project(q);});
+      svg.append(node("polygon",{points:corners.map(q=>q.join(",")).join(" "),fill:"#ccc","fill-opacity":.035,stroke:"#777","stroke-opacity":.3,"stroke-width":.7}));
+      const center=corners.reduce((acc,q)=>acc.map((v,i)=>v+q[i]/4),[0,0]);label(svg,...center,name);
+    });
+    ["X","Y","Z"].forEach((name,axis)=>{
+      const end=[0,0,0];end[axis]=extent*1.65;const q=project(end);
+      const neg=[0,0,0];neg[axis]=-extent*1.1;line(svg,...project(neg),...origin,"#555","3 5");
+      svg.append(node("line",{x1:origin[0],y1:origin[1],x2:q[0],y2:q[1],stroke:"#bbb","stroke-width":1,"marker-end":`url(#${id})`}));
+      label(svg,q[0]+(axis===0?-12:12),q[1],name);
+    });
+    const segments=[[p,foot,`z₁ = ${z}`],[foot,project([x,0,0]),`y₁ = ${y}`],[foot,project([0,y,0]),`x₁ = ${x}`]];
+    segments.forEach(([a,b,name],i)=>{
+      if(Math.hypot(a[0]-b[0],a[1]-b[1])>.1){line(svg,...a,...b,"#eee","4 5"); label(svg,(a[0]+b[0])/2+(i===0?18:0),(a[1]+b[1])/2+(i===0?0:18),name);}
+    });
+    [[x,0,z],[0,y,z]].forEach(v=>line(svg,...p,...project(v),"#777","2 6"));
+    svg.append(node("circle",{cx:foot[0],cy:foot[1],r:3,fill:"#161616",stroke:"#ddd"}));
+    svg.append(node("circle",{cx:p[0],cy:p[1],r:5,fill:"#fff",stroke:"#888","stroke-width":3}));
+    label(svg,p[0]+12,p[1]-14,`(${point.join(", ")})`,"start");label(svg,origin[0]+12,origin[1]+18,"O");
+    const rho=Math.hypot(x,y), r=Math.hypot(x,y,z), phi=rho?Math.atan2(y,x)*180/Math.PI:null, theta=r?Math.acos(Math.max(-1,Math.min(1,z/r)))*180/Math.PI:null;
+    const deg=v=>v===null?"未定義":`${Number(v.toFixed(2))}°`;
+    let caption=`卡氏座標 (x, y, z) = (${point.join(", ")})`;
+    if(system==="cylindrical")caption=`圓柱座標：ρ = ${rho.toFixed(3)}，φ = ${deg(phi)}，z = ${z}`;
+    if(system==="spherical")caption=`球面座標：r = ${r.toFixed(3)}，θ = ${deg(theta)}，φ = ${deg(phi)}`;
+    label(svg,340,405,caption);label(svg,340,435,"φ 自 +X 朝 +Y；θ 自 +Z 測量。角度單位：度。");
+    label(svg,340,459,"等角投影示意；零長度分量不重畫。實際長度與夾角以座標計算。");
+    if(system!=="cartesian" && rho>0){
+      const arc=[];const angle=Math.atan2(y,x);for(let i=0;i<=36;i++)arc.push(project([rho*Math.cos(angle*i/36),rho*Math.sin(angle*i/36),0]));plot(svg,arc,"#aaa");
+      line(svg,...origin,...foot,"#aaa","2 4");
+    }
+    if(system==="spherical" && r>0){
+      line(svg,...origin,...p,"#ddd");
+      const arc=[], angle=theta*Math.PI/180, az=rho?Math.atan2(y,x):0;
+      for(let i=0;i<=36;i++){const t=angle*i/36;arc.push(project([r*Math.sin(t)*Math.cos(az),r*Math.sin(t)*Math.sin(az),r*Math.cos(t)]));}plot(svg,arc,"#888");
+    }
+    return svg;
+  }
+  return { coordinateDiagram, render(spec) {
     if (spec.kind === "bode") return bodeDiagram(spec);
     if (spec.kind === "vector") return vectorDiagram(spec);
     if (spec.kind === "xy") return xyDiagram(spec);
