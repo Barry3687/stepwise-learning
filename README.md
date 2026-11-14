@@ -86,3 +86,9 @@ python backend/server.py --port 8000
 座標探索可輸入 XYZ；電磁學章節在 lesson.json 或 concept 設 `subject: "electromagnetics"`，上傳講義則由使用者勾選電磁學，才啟用圓柱／球面轉換。所有模式繪製相同物理點，採物理學 θ 自 +Z、φ 自 +X 朝 +Y 的定義。
 
 章節的 AI 作答區可貼上、拖曳或選擇算式截圖。選擇題答案、文字與圖片一起送出，需勾選資料傳送同意；圖片會縮至最長邊 1600 像素。移除圖片不影響文字與原有選擇題判分。AI 整理產生的內容仍是草稿，核對後再使用原本章節匯入流程。
+
+## 私人線上 AI 工作區
+
+https://stepwise-ai-barry3687.fantasticstarfish16.chatgpt.site/
+
+登入後在設定頁輸入 Groq 金鑰、載入並選擇模型、儲存後可直接整理講義。金鑰經後端加密保存，公開 GitHub 不含金鑰。PDF/Word 在瀏覽器解析；講義只於主動整理時傳至 Groq。公開網站保留閱讀與導覽，AI 入口連到私人工作區。原本本機服務仍可使用。

@@ -8,3 +8,6 @@ __pycache__/
 .DS_Store
 .chapter-write.lock
 .chapter-stage-*/
+
+# 私人線上部署來源獨立維護
+online-ai/

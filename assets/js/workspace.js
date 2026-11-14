@@ -55,6 +55,11 @@ window.LectureWorkspace = (() => {
     section.append(fields,switchLabel,note,chart,status);host.append(section);updateLabs();return section;
   }
   function materials(host) {
+    if(location.hostname === "barry3687.github.io") {
+      const panel=el("section",undefined,"upload-panel");
+      panel.append(el("h2","使用 AI 整理講義"),el("p","AI 整理與圖片批改已移至私人線上工作區。登入後設定一次 Groq 金鑰，即可直接在網頁使用，不必啟動本機服務。","fine-print"));
+      const link=el("a","開啟私人 AI 學習工作區 →","action-button");link.href="https://stepwise-ai-barry3687.fantasticstarfish16.chatgpt.site/";panel.append(link);host.append(panel);return;
+    }
     const section=el("section",undefined,"upload-panel");section.append(el("h2","講義與資料上傳區"),el("p","檔案只保留在本頁記憶體，重新整理後清除；不會加入公開網站。每份上限 10 MB，最多 5 份。","fine-print"));
     const zone=el("label",undefined,"drop-zone");zone.append(el("strong","拖曳講義至此，或點擊選擇檔案"));
     const picker=el("input");picker.type="file";picker.multiple=true;picker.accept=".pdf,.md,.txt,.docx,.png,.jpg,.jpeg";zone.append(picker);
